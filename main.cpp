@@ -1,5 +1,7 @@
-#include <QGuiApplication>
+#include <QGuiApplication> // Changed from QGuiApplication to QApplication
 #include <QQmlApplicationEngine>
+#include <QCoreApplication>
+#include <QObject>
 
 int main(int argc, char *argv[])
 {
