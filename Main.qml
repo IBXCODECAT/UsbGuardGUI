@@ -1,6 +1,6 @@
 import QtQuick
 
-import TableModel
+import UsbGuardDevicesModel
 
 Window {
 
@@ -21,7 +21,7 @@ Window {
         rowSpacing: 1
         clip: true
 
-        model: TableModel {}
+        model: UsbGuardDevicesModel {}
 
         delegate: Rectangle {
             implicitWidth: 150
@@ -29,6 +29,10 @@ Window {
 
             // Display the table header in a different color than the table content
             color: (header == true) ? appPalette.accent : appPalette.base
+
+            //TableView.onPooled: console.log(tabledata + " pooled")
+            //TableView.onReused: console.log(tabledata + " reused")
+
             Text {
                 text: tabledata
                 anchors.centerIn: parent

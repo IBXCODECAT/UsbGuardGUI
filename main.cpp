@@ -3,13 +3,14 @@
 #include <QCoreApplication>
 #include <QObject>
 
-#include "tablemodel.h"
+#include "UsbGuardDevicesmodel.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<TableModel>("TableModel", 0, 1, "TableModel");
+    // Register the UsbGuardDeviceModel
+    qmlRegisterType<UsbGuardDevicesModel>("UsbGuardDevicesModel", 1, 0, "UsbGuardDevicesModel");
 
     QQmlApplicationEngine engine;
     QObject::connect(

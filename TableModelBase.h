@@ -1,20 +1,21 @@
-#ifndef TABLEMODEL_H
-#define TABLEMODEL_H
+#ifndef TABLEMODELBASE_H
+#define TABLEMODELBASE_H
 
 #include <QObject>
 #include <QVector>
 #include <QAbstractTableModel>
 
-class TableModel : public QAbstractTableModel
+class TableModelBase : public QAbstractTableModel
 {
     Q_OBJECT
+protected:
     enum TableRoles {
         TableDataRole = Qt::UserRole + 1,
         HeaderRole
     };
 
 public:
-    explicit TableModel(QObject *parent = nullptr);
+    explicit TableModelBase(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;
@@ -23,11 +24,15 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override = 0;
+
+protected:
+    QVector<QVector<QString>> table;
+
+    void setHeaders(const QStringList& headers);
+
 signals:
 public slots:
-
-private:
-    QVector<QVector<QString>> table;
 };
 
-#endif // TABLEMODEL_H
+#endif // TABLEMODELBASE_H
