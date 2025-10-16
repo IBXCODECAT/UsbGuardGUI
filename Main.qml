@@ -1,5 +1,7 @@
 import QtQuick
 
+import TableModel
+
 Window {
 
     SystemPalette { id: appPalette; colorGroup: SystemPalette.Active }
@@ -13,36 +15,20 @@ Window {
     // This will correctly switch between white (light mode) and dark grey (dark mode).
     color: appPalette.window
 
-    // The main content area
-    Column {
+    TableView {
         anchors.fill: parent
-        spacing: 15
-        padding: 20
+        columnSpacing: 1
+        rowSpacing: 1
+        clip: true
 
-        Text {
-            horizontalAlignment: Qt.AlignCenter
-            font.pixelSize: 24
-            font.bold: true
-            text: qsTr("USB Guard Service Status")
+        model: TableModel {}
 
-            color: appPalette.windowText
-        }
-
-        Rectangle {
-            width: 600
-            height: 480
-            color: "#E0F7FA"
-            radius: 8
-            border.color: "#00BCD4"
-            border.width: 1
-
+        delegate: Rectangle {
+            implicitWidth: 100
+            implicitHeight: 50
             Text {
-                font.pixelSize: 18
-                text: qsTr("Service: Running\nPolicy: Loaded (0 devices blocked)")
-                color: "#006064"
-                horizontalAlignment: Text.AlignHCenter
+                text: display
             }
         }
-
     }
 }

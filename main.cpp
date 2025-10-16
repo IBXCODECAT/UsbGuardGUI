@@ -3,9 +3,13 @@
 #include <QCoreApplication>
 #include <QObject>
 
+#include "tablemodel.h"
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    qmlRegisterType<TableModel>("TableModel", 0, 1, "TableModel");
 
     QQmlApplicationEngine engine;
     QObject::connect(

@@ -17,6 +17,7 @@ qt_add_qml_module(appUsbGuardGUI
     VERSION 1.0
     QML_FILES
         Main.qml
+        SOURCES tablemodel.h tablemodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
