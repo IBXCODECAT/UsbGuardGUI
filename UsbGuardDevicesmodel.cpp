@@ -48,6 +48,12 @@ void UsbGuardDevicesModel::loadDeviceData(const QList<QVector<QString>>& devices
     endResetModel();
 }
 
+struct UsbGuardDevice
+{
+    uint id;
+    QString rule;
+};
+
 void UsbGuardDevicesModel::connectToDBus()
 {
     // The USBGuard D-Bus service is on the system bus
@@ -76,68 +82,80 @@ void UsbGuardDevicesModel::connectToDBus()
         return;
     }
 
+    qDBusRegisterMetaType<QPair<uint, QString>>();
+    qDBusRegisterMetaType<QList<QPair<uint, QString>>>();
 
-    // --- FIX: Register the custom D-Bus type ---
-    qDBusRegisterMetaType<QList<QVariantList>>();
-
-
-    // Initial Device List Retrieval (Asynchronous Call)
     QDBusPendingCall asyncCall = m_dbusInterface->asyncCall("listDevices", "match");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(asyncCall, this);
 
     connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *watcher) {
-        // Corrected template argument: QList<QVariantList> or QList<QVariant>
-        // depending on the exact D-Bus version/API mapping, but QList<QVariantList> is more precise for structured arrays.
-        QDBusPendingReply<QList<QVariantList>> reply = *watcher;
+
+        // Use the type that matches the D-Bus signature 'a(us)'
+        QDBusPendingReply<QList<QPair<uint, QString>>> reply = *watcher;
 
         if (reply.isError()) {
             qWarning() << "Error fetching device list:" << reply.error().message();
         } else {
             QList<QVector<QString>> deviceList;
 
-            // The reply.value() is a QList<QVariantList>, where each QVariantList is one device
-            for (const QVariantList& deviceData : reply.value()) {
+            // Iterate over the correctly typed reply
+            for (const QPair<uint, QString>& deviceData : reply.value()) {
 
-                // For listDevices, the structure is (uint id, QString device_rule)
-                if (deviceData.count() < 2) continue; // Skip malformed entries
+                uint id = deviceData.first;         // 'u'
+                QString rule = deviceData.second;   // 's'
+                // ... rest of your parsing logic ...
 
-                uint id = deviceData.at(0).toUInt(); // The device ID
-                QString rule = deviceData.at(1).toString(); // The device rule string
+                // 1. Determine Status (First token is the target, e.g., 'allow', 'block', 'reject')
+                QStringList ruleParts = rule.split(' ', Qt::SkipEmptyParts);
+                QString status = ruleParts.value(0, "UNKNOWN").toUpper(); // ALLOW, BLOCK, REJECT, etc.
 
-                // NOTE: The device rule string needs parsing to get all attributes.
-                // For a temporary placeholder:
-                QString target = rule.split(' ').value(0, "UNKNOWN");
+                // 2. Simple Rule String Parsing (This is an approximation—real parsing is complex)
+                // You'll need a robust way to extract key-value pairs from the rule string.
+                // For now, let's use placeholders and focus on the ID/Status
+
+                // This is a common pattern for extraction:
+                auto extractValue = [&](const QString& key) -> QString {
+                    int keyIndex = ruleParts.indexOf(key);
+                    if (keyIndex != -1 && keyIndex + 1 < ruleParts.size()) {
+                        QString value = ruleParts.at(keyIndex + 1);
+                        // Handle quoted strings for 'name'
+                        if (value.startsWith('"') && value.endsWith('"')) {
+                            return value.mid(1, value.length() - 2);
+                        }
+                        return value;
+                    }
+                    return "...";
+                };
+
+                QString vidPid = extractValue("id");
+                QString serial = extractValue("serial");
+                QString port   = extractValue("port");
+                QString name   = extractValue("name");
+                // Interfaces aren't easily extracted from the simple rule string; placeholder.
 
                 deviceList.append({
                     QString::number(id),
-                    target.toUpper(),
-                    rule, // Using the full rule string as a temporary description
-                    "...",
-                    "...",
-                    "...",
-                    "..."
+                    status,
+                    name.isEmpty() ? rule : name, // Use name if available, otherwise the rule string
+                    vidPid,
+                    serial,
+                    port,
+                    "..." // Interfaces
                 });
             }
 
+            watcher->deleteLater();
+            // ...
+
             if (!deviceList.isEmpty()) {
-                // Call your device loading function here
                 loadDeviceData(deviceList);
                 qDebug() << "Successfully loaded" << deviceList.size() << "devices.";
             }
         }
-        watcher->deleteLater();
-    });
 
-    // // 3. Connect to the real-time D-Bus signal
-    // bus.connect(
-    //     "org.usbguard.Policy1",
-    //     "/org/usbguard/Devices",
-    //     "org.usbguard.Devices1",
-    //     "DevicePresenceChanged",
-    //     this,
-    //     SLOT(devicePresenceChanged(uint, uint, QString, QString, const QVariantMap&))
-    // );
+    });
 }
+
 
 void UsbGuardDevicesModel::devicePresenceChanged(
     uint id,
