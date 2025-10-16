@@ -1,18 +1,26 @@
 #include "tablemodel.h"
 
-TableModel::TableModel(QObject *parent) : QAbstractTableModel(parent) {
+TableModel::TableModel(QObject *parent) : QAbstractTableModel(parent)
+{
+    table.append({"ID", "Status", "Name", "VID:PID", "Serial", "Port", "Interfaces"});
 
+    table.append({"0", "Allowed", "Test", "VID:PID", "Serial", "Port", "Interfaces"});
+    table.append({"1", "Blocked", "Test", "VID:PID", "Serial", "Port", "Interfaces"});
 }
 
-int TableModel::rowCount(const QModelIndex &) const { return 200; }
+int TableModel::rowCount(const QModelIndex &) const { return table.size(); }
 
-int TableModel::columnCount(const QModelIndex &) const { return 200; }
+int TableModel::columnCount(const QModelIndex &) const { return table[0].size(); }
 
 QVariant TableModel::data(const QModelIndex &index, int role) const
 {
-    switch(role) {
-    case Qt::DisplayRole:
-        return QString("%1, %2").arg(index.column()).arg(index.row());
+    switch(role)
+    {
+    case TableDataRole:
+        return table.at(index.row()).at(index.column());
+    case HeaderRole:
+        if(index.row() == 0) return true;
+        return false;
     default:
         break;
     }
@@ -22,5 +30,8 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
 
 QHash<int, QByteArray> TableModel::roleNames() const
 {
-    return { {Qt::DisplayRole, "display"}};
+    QHash<int, QByteArray> roles;
+    roles[TableDataRole] = "tabledata";
+    roles[HeaderRole] = "header";
+    return roles;
 }

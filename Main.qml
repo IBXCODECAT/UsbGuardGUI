@@ -24,10 +24,17 @@ Window {
         model: TableModel {}
 
         delegate: Rectangle {
-            implicitWidth: 100
+            implicitWidth: 150
             implicitHeight: 50
+
+            // Display the table header in a different color than the table content
+            color: (header == true) ? appPalette.accent : appPalette.base
             Text {
-                text: display
+                text: tabledata
+                anchors.centerIn: parent
+                font.pointSize: 12
+                // Display the text in the table header in a different color
+                color: (header == true) ? appPalette.dark : appPalette.text
             }
         }
     }

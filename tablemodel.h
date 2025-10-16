@@ -2,11 +2,17 @@
 #define TABLEMODEL_H
 
 #include <QObject>
+#include <QVector>
 #include <QAbstractTableModel>
 
 class TableModel : public QAbstractTableModel
 {
     Q_OBJECT
+    enum TableRoles {
+        TableDataRole = Qt::UserRole + 1,
+        HeaderRole
+    };
+
 public:
     explicit TableModel(QObject *parent = nullptr);
 
@@ -19,6 +25,9 @@ public:
 
 signals:
 public slots:
+
+private:
+    QVector<QVector<QString>> table;
 };
 
 #endif // TABLEMODEL_H
