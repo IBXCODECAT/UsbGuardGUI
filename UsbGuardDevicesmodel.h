@@ -23,8 +23,7 @@ private:
     void initializeHeaders();
 
     // D-Bus object to interact with the USBGuard daemon
-    QDBusInterface *m_dbusInterface;
-    void connectToDBus();
+    void connectToProxy();
 };
 
 #endif // USBGUARDDEVICESMODEL_H

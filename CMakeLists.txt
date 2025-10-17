@@ -19,7 +19,7 @@ qt_add_qml_module(appUsbGuardGUI
         Main.qml
         SOURCES TableModelBase.h TableModelBase.cpp
         SOURCES UsbGuardDevicesmodel.h UsbGuardDevicesmodel.cpp
-        SOURCES dbususbproxy.h dbususbproxy.cpp
+        SOURCES DBusUsbProxy.h DBusUsbProxy.cpp
 )
 
 target_link_libraries(appUsbGuardGUI PRIVATE

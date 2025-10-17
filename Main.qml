@@ -16,56 +16,30 @@ Window {
     // This will correctly switch between white (light mode) and dark grey (dark mode).
     color: appPalette.window
 
-    Column {
-
-        Row {
-            height: 50
-
-            Button {
-                text: "Click Me!"
-                onClicked: {
-                    console.log("Button clicked!");
-                    // Perform desired action here
-                }
-            }
-
-            Button {
-                text: "Another Button"
-                onClicked: {
-                    console.log("Another button clicked!");
-                }
-            }
-        }
-
-        visible: true
-        spacing: 10
+    TableView {
         anchors.fill: parent
+        columnSpacing: 1
+        rowSpacing: 1
+        clip: true
 
-        TableView {
-            anchors.fill: parent
-            columnSpacing: 1
-            rowSpacing: 1
-            clip: true
+        model: UsbGuardDevicesModel {}
 
-            model: UsbGuardDevicesModel {}
+        delegate: Rectangle {
+            implicitWidth: 150
+            implicitHeight: 50
 
-            delegate: Rectangle {
-                implicitWidth: 150
-                implicitHeight: 50
+            // Display the table header in a different color than the table content
+            color: (header == true) ? appPalette.accent : appPalette.base
 
-                // Display the table header in a different color than the table content
-                color: (header == true) ? appPalette.accent : appPalette.base
+            //TableView.onPooled: console.log(tabledata + " pooled")
+            //TableView.onReused: console.log(tabledata + " reused")
 
-                //TableView.onPooled: console.log(tabledata + " pooled")
-                //TableView.onReused: console.log(tabledata + " reused")
-
-                Text {
-                    text: tabledata
-                    anchors.centerIn: parent
-                    font.pointSize: 12
-                    // Display the text in the table header in a different color
-                    color: (header == true) ? appPalette.dark : appPalette.text
-                }
+            Text {
+                text: tabledata
+                anchors.centerIn: parent
+                font.pointSize: 12
+                // Display the text in the table header in a different color
+                color: (header == true) ? appPalette.dark : appPalette.text
             }
         }
     }

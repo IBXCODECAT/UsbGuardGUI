@@ -7,7 +7,7 @@
 #include <QtDBus/QDBusMetaType>
 
 #include "UsbGuardDevicesmodel.h"
-#include "dbususbproxy.h"
+#include "DBusUsbProxy.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,11 +16,8 @@ int main(int argc, char *argv[])
     // Register the UsbGuardDeviceModel
     qmlRegisterType<UsbGuardDevicesModel>("UsbGuardDevicesModel", 1, 0, "UsbGuardDevicesModel");
 
-    const auto proxy = DBusUsbProxy();
-
-    qDBusRegisterMetaType<QPair<uint, QString>>();
-    qDBusRegisterMetaType<QList<QPair<uint, QString>>>();
-
+    DBusUsbProxy proxy = DBusUsbProxy();
+    proxy.listDevices();
 
     QQmlApplicationEngine engine;
     QObject::connect(
