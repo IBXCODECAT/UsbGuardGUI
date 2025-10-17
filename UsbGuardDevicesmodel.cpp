@@ -14,7 +14,7 @@ UsbGuardDevicesModel::UsbGuardDevicesModel(QObject *parent) : TableModelBase(par
 void UsbGuardDevicesModel::initializeHeaders()
 {
     // These are the columns for the devices table
-    QStringList headers = {"ID", "Status", "Name", "VID:PID", "Serial", "Port", "Interfaces"};
+    QStringList headers = {"ID", "Status", "Name", "VID:PID", "Serial", "Port"};
     setHeaders(headers);
 }
 
@@ -139,8 +139,7 @@ void UsbGuardDevicesModel::connectToDBus()
                     name.isEmpty() ? rule : name, // Use name if available, otherwise the rule string
                     vidPid,
                     serial,
-                    port,
-                    "..." // Interfaces
+                    port
                 });
             }
 

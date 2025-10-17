@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 
 import UsbGuardDevicesModel
 
@@ -15,30 +16,56 @@ Window {
     // This will correctly switch between white (light mode) and dark grey (dark mode).
     color: appPalette.window
 
-    TableView {
+    Column {
+
+        Row {
+            height: 50
+
+            Button {
+                text: "Click Me!"
+                onClicked: {
+                    console.log("Button clicked!");
+                    // Perform desired action here
+                }
+            }
+
+            Button {
+                text: "Another Button"
+                onClicked: {
+                    console.log("Another button clicked!");
+                }
+            }
+        }
+
+        visible: true
+        spacing: 10
         anchors.fill: parent
-        columnSpacing: 1
-        rowSpacing: 1
-        clip: true
 
-        model: UsbGuardDevicesModel {}
+        TableView {
+            anchors.fill: parent
+            columnSpacing: 1
+            rowSpacing: 1
+            clip: true
 
-        delegate: Rectangle {
-            implicitWidth: 150
-            implicitHeight: 50
+            model: UsbGuardDevicesModel {}
 
-            // Display the table header in a different color than the table content
-            color: (header == true) ? appPalette.accent : appPalette.base
+            delegate: Rectangle {
+                implicitWidth: 150
+                implicitHeight: 50
 
-            //TableView.onPooled: console.log(tabledata + " pooled")
-            //TableView.onReused: console.log(tabledata + " reused")
+                // Display the table header in a different color than the table content
+                color: (header == true) ? appPalette.accent : appPalette.base
 
-            Text {
-                text: tabledata
-                anchors.centerIn: parent
-                font.pointSize: 12
-                // Display the text in the table header in a different color
-                color: (header == true) ? appPalette.dark : appPalette.text
+                //TableView.onPooled: console.log(tabledata + " pooled")
+                //TableView.onReused: console.log(tabledata + " reused")
+
+                Text {
+                    text: tabledata
+                    anchors.centerIn: parent
+                    font.pointSize: 12
+                    // Display the text in the table header in a different color
+                    color: (header == true) ? appPalette.dark : appPalette.text
+                }
             }
         }
     }
