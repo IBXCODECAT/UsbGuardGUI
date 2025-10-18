@@ -4,7 +4,7 @@
 #include <QObject>
 #include "DBusUsbProxy.h"
 
-#include "UsbGuardDevicesmodel.h"
+#include "Models/UsbGuardDevicesmodel.h"
 
 class UsbGuardManager : public QObject
 {

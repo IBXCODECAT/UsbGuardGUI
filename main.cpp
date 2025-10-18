@@ -8,7 +8,7 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMetaType>
 
-#include "UsbGuardDevicesmodel.h"
+#include "Models/UsbGuardDevicesmodel.h"
 #include "UsbGuardManager.h"
 
 int main(int argc, char *argv[])
