@@ -6,16 +6,7 @@
 #include <QtDBus/QDBusMetaType>
 #include <QtDBus/QDBusReply>
 
-struct UsbDeviceData
-{
-    uint id = 0;
-    QString status; // e.g ALLOW, BLOCK, REJECT
-    QString name;   // User-friendly name if availible
-    QString vidPid; // Vendor ID and Product ID string (e.g., "1234:5678")
-    QString serial; // Device Serial Number
-};
-
-Q_DECLARE_METATYPE(UsbDeviceData)
+#include "DataStructures.h"
 
 class DBusUsbProxy : public QObject
 {

@@ -10,8 +10,6 @@ static bool typeRegistration = []() {
     return true;
 }();
 
-Q_DECLARE_METATYPE(QList<UsbDeviceData>) // Register the clean output type for signals
-
 DBusUsbProxy::DBusUsbProxy(QObject *parent) : m_sysBus(QDBusConnection::systemBus()) {
 
     if(m_sysBus.isConnected()) {

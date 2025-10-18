@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-import UsbGuardDevicesModel
+
 
 Window {
 
@@ -22,7 +22,12 @@ Window {
         rowSpacing: 1
         clip: true
 
-        model: UsbGuardDevicesModel {}
+
+        // ----------------------------------------------------
+        // 1. LINK THE MODEL
+        // The C++ model exposed via setContextProperty("usbDevicesModel", ...)
+        // ----------------------------------------------------
+        model: usbDevicesModel
 
         delegate: Rectangle {
             implicitWidth: 150

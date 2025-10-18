@@ -1,29 +1,52 @@
 #ifndef USBGUARDDEVICESMODEL_H
 #define USBGUARDDEVICESMODEL_H
 
-#include <QtDBus/QDBusInterface>
 #include "TableModelBase.h"
+#include "DataStructures.h"
+#include <QList>
+#include <QStringList>
+#include <QVariantMap>
+
+// Note: UsbGuardDevicesModel is a better name than UsbGuardDataModel
 
 class UsbGuardDevicesModel : public TableModelBase
 {
     Q_OBJECT
+    // Expose this model to QML with a unique name
+    Q_PROPERTY(QStringList headers READ headers CONSTANT)
+
 public:
     explicit UsbGuardDevicesModel(QObject *parent = nullptr);
 
-    // Override the pure virtual function from the base class
+    // QAbstractTableModel/TableModelBase overrides
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void loadDeviceData(const QList<QVector<QString>>& devices);
+    // Public method to receive data from UsbGuardManager
+    void loadDeviceData(const QList<UsbDeviceData>& devices);
 
-public slots:
-    // Slot to handle real-time device connection/disconnection/update events
-    void devicePresenceChanged(uint id, uint event, QString target, QString device_rule, const QVariantMap &attributes);
+    // D-Bus signal handler (placeholder in your original code)
+    void devicePresenceChanged(
+        uint id,
+        uint event,
+        QString target,
+        QString device_rule,
+        const QVariantMap &attributes);
+
+    QStringList headers() const { return m_headers; }
 
 private:
     void initializeHeaders();
 
-    // D-Bus object to interact with the USBGuard daemon
-    void connectToProxy();
+    // Member to store the column headers, used for headerData()
+    QStringList m_headers;
+
+    // The struct UsbGuardDevice from the implementation should be here
+    // as it's a specific type used by the model's signal handler.
+    struct UsbGuardDevice
+    {
+        uint id;
+        QString rule;
+    };
 };
 
 #endif // USBGUARDDEVICESMODEL_H
