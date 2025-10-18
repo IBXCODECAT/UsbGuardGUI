@@ -3,10 +3,19 @@
 
 // Register the custom types required for the D-Bus communication
 // These are necessary because the USBGuard listDevices method returns
-// a list of structs (a(us)), which maps to QList<QPair<uint, QString>> in Qt.
+// a list of structs (a(us)), and the signal uses a dictionary (a{ss}).
 static bool typeRegistration = []() {
     qDBusRegisterMetaType<QPair<uint, QString>>();
     qDBusRegisterMetaType<QList<QPair<uint, QString>>>();
+
+    // Register QMap<QString, QString> for the D-Bus signal's a{ss} argument
+    // This is often more reliable than QVariantMap for strict signal matching.
+    // --> COMMENT THIS OUT OR REMOVE IT <--
+    qDBusRegisterMetaType<QMap<QString, QString>>();
+
+    // If you need QVariantMap, ensure it's here (often implicit):
+    // qDBusRegisterMetaType<QVariantMap>();
+
     return true;
 }();
 
@@ -32,17 +41,26 @@ DBusUsbProxy::DBusUsbProxy(QObject *parent) : m_sysBus(QDBusConnection::systemBu
         m_usbInterface.reset(rawInterfacePtr);
         qDebug() << "USBGuard D-Bus interface created successfully.";
 
-        // Connect to D-Bus signals immediately upon interface creation
-        // Assumes a signal named "DeviceChanged" exists on the interface
-        QObject::connect(m_usbInterface.get(),
-                SIGNAL(DeviceChanged(uint, QString)), // D-Bus signal signature
-                this,
-                SLOT(handleRemoteDeviceChanged(uint, QString)));
+        // FINAL FIX: Use the static QDBusConnection::connect method.
+        // This is the most robust way to connect to a remote D-Bus signal,
+        // as it bypasses QDBusInterface's internal connect complexities.
+        m_sysBus.connect(
+            "org.usbguard1",           // 1. Service Name (The destination)
+            "/org/usbguard1/Devices",  // 2. Object Path
+            "org.usbguard.Devices1",   // 3. Interface Name
+            "DevicePolicyChanged",     // 4. Signal Name
+            "uuusua{ss}",              // 5. D-Bus Type Signature
+            this,                      // 6. The receiver object
+            SLOT(handleRemotePolicyChanged(uint, uint, uint, QString, uint, QMap<QString, QString>)) // 7. The slot
+        );
+
+        qDebug() << "Attempted connection to DevicePolicyChanged using QDBusAbstractInterface::connect.";
 
     } else {
         qCritical() << "Failed to create USBGuard D-Bus Interface: " << rawInterfacePtr->lastError().message();
         delete rawInterfacePtr;
     }
+
 }
 
 // ----------------------------------------------------------------------
@@ -93,14 +111,22 @@ void DBusUsbProxy::handleListDevicesReply(QDBusPendingCallWatcher *watcher)
     emit deviceListReady(deviceList); // Notify the GUI with the clean data
 }
 
-void DBusUsbProxy::handleRemoteDeviceChanged(uint id, const QString& rule)
+void DBusUsbProxy::handleRemotePolicyChanged(
+    uint id,
+    uint target_old,
+    uint target_new,
+    const QString& device_rule,
+    uint rule_id,
+    const QMap<QString, QString> &attributes) // <-- FIX: CHANGED TO QMap<QString, QString>
 {
-    qDebug() << "D-Bus Signal: Device Changed received for ID" << id;
+    qDebug() << "D-Bus Signal: DevicePolicyChanged received."
+             << "ID:" << id << "Target Old:" << target_old
+             << "Target New:" << target_new
+             << "Rule:" << device_rule
+             << "Attributes Count:" << attributes.size();
 
-    // In a real application, you'd parse the rule here to determine the change type,
-    // update your internal device model, and then emit a generic signal.
+    // NO CONVERSION NEEDED NOW! The data is already QMap<QString, QString>
 
-    // For now, we simply signal the list changed, prompting the GUI to re-request the full list.
     emit deviceListChanged();
 }
 

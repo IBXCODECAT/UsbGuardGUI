@@ -6,6 +6,8 @@
 #include <QtDBus/QDBusMetaType>
 #include <QtDBus/QDBusReply>
 
+#include <memory>
+
 #include "DataStructures.h"
 
 class DBusUsbProxy : public QObject
@@ -30,13 +32,30 @@ signals:
     // Example signal for device events (D-Bus signals)
     void deviceListChanged();
 
+
+
 private slots:
     // Slot to handle the asynchronous reply from D-Bus
     void handleListDevicesReply(QDBusPendingCallWatcher *watcher);
 
-    // Slot to handle remote D-Bus signals (e.g., when a device is plugged/unplugged)
-    // NOTE: The signature must match the remote D-Bus signal exactly.
-    void handleRemoteDeviceChanged(uint id, const QString& rule);
+    // Feature not yet implemented by USBGuard
+    // void handleRemoteDeviceChanged(
+    //     uint id,
+    //     uint event,
+    //     const QString& target,
+    //     const QString& device_rule,
+    //     const QVariantMap &attributes // <-- a{ss}
+    // );
+
+    // SIGNATURE: u, u, u, s, u, a{ss}
+    void handleRemotePolicyChanged(
+        uint id,
+        uint target_old,
+        uint target_new,
+        const QString& device_rule,
+        uint rule_id,
+        const QMap<QString, QString> &attributes); // <-- CHANGED TO QMap<QString, QString>
+
 
 private:
     QDBusConnection m_sysBus;

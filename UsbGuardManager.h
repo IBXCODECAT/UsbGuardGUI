@@ -20,6 +20,7 @@ private slots:
     void handleDeviceListReady(const QList<UsbDeviceData>& devices);
 
     // Slot to handle a notification that the list has changed on the D-Bus
+    // NOTE:
     void handleDeviceListChanged();
 
     // Slot to handle errors from the proxy
