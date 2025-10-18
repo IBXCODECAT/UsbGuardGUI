@@ -2,20 +2,10 @@
 #include <QtDBus/QDBusPendingCallWatcher>
 
 // Register the custom types required for the D-Bus communication
-// These are necessary because the USBGuard listDevices method returns
-// a list of structs (a(us)), and the signal uses a dictionary (a{ss}).
 static bool typeRegistration = []() {
     qDBusRegisterMetaType<QPair<uint, QString>>();
     qDBusRegisterMetaType<QList<QPair<uint, QString>>>();
-
-    // Register QMap<QString, QString> for the D-Bus signal's a{ss} argument
-    // This is often more reliable than QVariantMap for strict signal matching.
-    // --> COMMENT THIS OUT OR REMOVE IT <--
-    qDBusRegisterMetaType<QMap<QString, QString>>();
-
-    // If you need QVariantMap, ensure it's here (often implicit):
-    // qDBusRegisterMetaType<QVariantMap>();
-
+    qDBusRegisterMetaType<QMap<QString, QString>>(); // For D-Bus a{ss}
     return true;
 }();
 
@@ -41,20 +31,18 @@ DBusUsbProxy::DBusUsbProxy(QObject *parent) : m_sysBus(QDBusConnection::systemBu
         m_usbInterface.reset(rawInterfacePtr);
         qDebug() << "USBGuard D-Bus interface created successfully.";
 
-        // FINAL FIX: Use the static QDBusConnection::connect method.
-        // This is the most robust way to connect to a remote D-Bus signal,
-        // as it bypasses QDBusInterface's internal connect complexities.
+        // Connect to the DevicePolicyChanged signal on the system bus.
         m_sysBus.connect(
-            "org.usbguard1",           // 1. Service Name (The destination)
-            "/org/usbguard1/Devices",  // 2. Object Path
-            "org.usbguard.Devices1",   // 3. Interface Name
-            "DevicePolicyChanged",     // 4. Signal Name
-            "uuusua{ss}",              // 5. D-Bus Type Signature
-            this,                      // 6. The receiver object
-            SLOT(handleRemotePolicyChanged(uint, uint, uint, QString, uint, QMap<QString, QString>)) // 7. The slot
-        );
+            "org.usbguard1",           // Service Name
+            "/org/usbguard1/Devices",  // Object Path
+            "org.usbguard.Devices1",   // Interface Name
+            "DevicePolicyChanged",     // Signal Name
+            "uuusua{ss}",              // D-Bus Type Signature
+            this,
+            SLOT(handleRemotePolicyChanged(uint, uint, uint, QString, uint, QMap<QString, QString>))
+            );
 
-        qDebug() << "Attempted connection to DevicePolicyChanged using QDBusAbstractInterface::connect.";
+        qDebug() << "DevicePolicyChanged signal connection established."; // More accurate message
 
     } else {
         qCritical() << "Failed to create USBGuard D-Bus Interface: " << rawInterfacePtr->lastError().message();
@@ -89,7 +77,7 @@ void DBusUsbProxy::listDevices()
 // ----------------------------------------------------------------------
 // Private Slots (Handling D-Bus Asynchronous Replies and Signals)
 // ----------------------------------------------------------------------
-void DBusUsbProxy::handleListDevicesReply(QDBusPendingCallWatcher *watcher)
+void DBusUsbProxy::handleListDevicesReply(QDBusPendingCallWatcher *const watcher)
 {
     // The watcher is a QObject created with 'new', delete it gracefully
     watcher->deleteLater();

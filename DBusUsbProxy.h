@@ -2,13 +2,17 @@
 #define DBUSUSBPROXY_H
 
 #include <QObject>
+#include <QtDBus/QDBusConnection> // Added for QDBusConnection type
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMetaType>
 #include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusPendingCallWatcher> // Forward declaration is enough, but adding is clean.
 
 #include <memory>
 
 #include "DataStructures.h"
+
+using InterfacePtr = std::unique_ptr<QDBusInterface>;
 
 class DBusUsbProxy : public QObject
 {
@@ -17,9 +21,9 @@ class DBusUsbProxy : public QObject
 public:
     explicit DBusUsbProxy(QObject *parent = nullptr);
 
-    // Public methods to verify connections and interface setup
-    inline bool IsConnected() { return m_sysBus.isConnected(); }
-    inline bool IsInterfaceValid() { return m_usbInterface != nullptr && m_usbInterface->isValid(); }
+    // Public accessors to verify connections
+    inline bool IsConnected() const { return m_sysBus.isConnected(); }
+    inline bool IsInterfaceValid() const { return m_usbInterface != nullptr && m_usbInterface->isValid(); }
 
     // Public method to start the asynchronous D-Bus call
     void listDevices();
@@ -28,38 +32,25 @@ signals:
     // Signals to notify the GUI application
     void deviceListReady(const QList<UsbDeviceData>& devices);
     void errorOccurred(const QString& message);
-
-    // Example signal for device events (D-Bus signals)
     void deviceListChanged();
-
-
 
 private slots:
     // Slot to handle the asynchronous reply from D-Bus
-    void handleListDevicesReply(QDBusPendingCallWatcher *watcher);
+    void handleListDevicesReply(QDBusPendingCallWatcher *const watcher);
 
-    // Feature not yet implemented by USBGuard
-    // void handleRemoteDeviceChanged(
-    //     uint id,
-    //     uint event,
-    //     const QString& target,
-    //     const QString& device_rule,
-    //     const QVariantMap &attributes // <-- a{ss}
-    // );
-
-    // SIGNATURE: u, u, u, s, u, a{ss}
+    // Slot to handle the DevicePolicyChanged D-Bus signal (u, u, u, s, u, a{ss})
     void handleRemotePolicyChanged(
         uint id,
         uint target_old,
         uint target_new,
         const QString& device_rule,
         uint rule_id,
-        const QMap<QString, QString> &attributes); // <-- CHANGED TO QMap<QString, QString>
+        const QMap<QString, QString> &attributes);
 
 
 private:
     QDBusConnection m_sysBus;
-    std::unique_ptr<QDBusInterface> m_usbInterface = nullptr;
+    InterfacePtr m_usbInterface = nullptr;
 
     // Helper function to encapsulate the complex rule parsing logic
     QList<UsbDeviceData> parseRuleStrings(const QList<QPair<uint, QString>>& rawData);
